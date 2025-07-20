@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8"/>
+  <title>IL2CPP Explorer</title>
+  <link rel="stylesheet" href="main.css"/>  
+  
+  <!-- Monaco worker loader config -->
+  <script>
+    window.MonacoEnvironment = {
+      getWorkerUrl: (_, label) => './vs/base/worker/workerMain.js'
+    };
+  </script>
+  <!-- AMD loader for Monaco -->
+  <script src="./vs/loader.js"></script>
+</head>
+<body>
+  <div id="container">
+    <div class="panel">
+      <div class="header">C# Code</div>
+      <div class="editor" id="left"></div>
+    </div>
+    <div class="panel">
+      <div class="header">Generated C++</div>
+      <div class="editor" id="middle"></div>
+    </div>
+    <div class="panel">
+      <div class="header">Generated ASM</div>
+      <div class="editor" id="right"></div>
+    </div>
+  </div>
+  <div id="bottom">
+    <label for="unityDirBtn">Unity Install:</label>
+    <button id="unityDirBtn" style="margin-left:8px;">Browse…</button>
+    <input
+      type="text"
+      id="unityDirPath"
+      readonly
+      placeholder="No folder selected"
+      style="margin-left:8px; width:60%;"
+    />
+    <input
+      type="file"
+      id="unityDirPicker"
+      webkitdirectory
+      directory
+      style="display:none;"
+    />    
+    <!-- platform dropdown -->
+    <label for="platformSelect" style="margin-left:16px;">Platform:</label>
+    <select id="platformSelect" style="margin-left:8px;">
+      <option value="Android" selected>Android</option>
+    </select>
+    <!-- architecture dropdown -->
+    <label for="archSelect" style="margin-left:16px;">Architecture:</label>
+    <select id="archSelect" style="margin-left:8px;">
+      <option value="ARM64" selected>ARM64</option>
+      <option value="ARMv7">ARMv7</option>
+    </select>    
+    <!-- config dropdown -->
+    <label for="configSelect" style="margin-left:16px;">Config:</label>
+    <select id="configSelect" style="margin-left:8px;">
+      <option value="Debug" selected>Debug</option>
+      <option value="Release">Release</option>
+    </select>    
+    <button id="generateBtn" style="margin-left:8px;">Generate</button>
+  </div>
+  <script src="./index.js"></script>
+</body>
+</html>
