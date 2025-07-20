@@ -5,6 +5,7 @@
   <title>IL2CPP Explorer</title>
   <link rel="stylesheet" href="main.css"/>  
   
+  <script src="./node_modules/split.js/dist/split.min.js"></script>
   <!-- Monaco worker loader config -->
   <script>
     window.MonacoEnvironment = {
@@ -15,6 +16,21 @@
   <script src="./vs/loader.js"></script>
 </head>
 <body>
+  <div id="container">
+    <div id="left-pane" class="panel">
+      <div class="header">C# Code</div>
+      <div class="editor" id="left"></div>
+    </div>
+    <div id="mid-pane" class="panel">
+      <div class="header">Generated C++</div>
+      <div class="editor" id="middle"></div>
+    </div>
+    <div id="right-pane" class="panel">
+      <div class="header">Generated ASM</div>
+      <div class="editor" id="right"></div>
+    </div>
+  </div>  
+  <!--
   <div id="container">
     <div class="panel">
       <div class="header">C# Code</div>
@@ -29,6 +45,7 @@
       <div class="editor" id="right"></div>
     </div>
   </div>
+  -->
   <div id="bottom">
     <label for="unityDirBtn">Unity Install:</label>
     <button id="unityDirBtn" style="margin-left:8px;">Browse…</button>

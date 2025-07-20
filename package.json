@@ -15,6 +15,7 @@
   },
   "dependencies": {
     "@shoelace-style/shoelace": "^2.20.1",
-    "monaco-editor": "^0.52.2"
+    "monaco-editor": "^0.52.2",
+    "split.js": "^1.6.5"
   }
 }

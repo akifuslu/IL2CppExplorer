@@ -1,6 +1,7 @@
 // main.js
 const { app, BrowserWindow, dialog, ipcMain, screen } = require('electron');
 const { execFile } = require('child_process');
+const fs = require('fs').promises;
 const path = require('path');
 
 
@@ -46,6 +47,15 @@ ipcMain.handle('run-script', (evt, { args, env }) => {
   });
 });
 
+ipcMain.handle('save-file', async (evt, { filePath, content }) => {
+  // ensure directory exists, or just write directly:
+  await fs.writeFile(filePath, content, 'utf8');
+  return `Wrote ${content.length} bytes to ${filePath}`;
+});
+
+ipcMain.handle('read-file', async (evt, filePath) => {
+  return fs.readFile(filePath, 'utf8');
+});
 
 app.whenReady().then(createWindow);
 
