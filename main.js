@@ -38,8 +38,10 @@ ipcMain.handle('run-script', (evt, { args, env }) => {
   return new Promise((resolve, reject) => {
     execFile(
       script,
-      { env: { ...process.env, ...env } },  // options in arg #2
+      { env: { ...process.env, ...env }},
       (err, stdout, stderr) => {
+        console.log('il2cpp stdout:\n', stdout);
+        console.error('il2cpp stderr:\n', stderr);
         if (err) return reject(stderr || err);
         resolve(stdout);
       }

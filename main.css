@@ -75,3 +75,31 @@ html, body {
     cursor: col-resize;
 }
   
+.monaco-editor .overlayWidgets {
+  position: absolute !important;
+  inset: 0 !important;             /* shorthand for top/right/bottom/left = 0 */
+  pointer-events: none;            /* so clicks fall through, if you want */
+}
+
+.my-loading-overlay {
+  position: absolute !important;
+  top: 0; right: 0; bottom: 0; left: 0 !important;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  background: rgba(255,255,255,0.6);
+  z-index: 99;
+}
+
+.spinner {
+  border: 4px solid #eee;
+  border-top:   4px solid #333;
+  border-radius: 50%;
+  width:  32px;
+  height: 32px;
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
