@@ -1,4 +1,7 @@
-require.config({ paths: { vs: './vs' } });
+require.config({
+    baseUrl: './',         // important when packaged (app.asar)
+    paths: { vs: './vs' }  // Monaco path
+  });
 
 require([
   'vs/editor/editor.main',

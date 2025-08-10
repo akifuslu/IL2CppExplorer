@@ -6,10 +6,16 @@ const path = require('path');
 
 let mainWin = null;
 let runningProc = null; // prevent parallel compile runs
+let userBase = null;    // cached app.getPath('userData')
 
 function resolveAppPath(p) {
   if (app.isPackaged) return path.join(process.resourcesPath, p);
   return path.join(__dirname, p);
+}
+
+function resolveUserPath(p) {
+  userBase = userBase || app.getPath('userData');
+  return path.isAbsolute(p) ? p : path.join(userBase, p);
 }
 
 function createWindow() {
@@ -32,7 +38,7 @@ function createWindow() {
   mainWin.loadFile('index.html');
 
   // keep your devtools on the right
-  mainWin.webContents.openDevTools({ mode: 'right' });
+  // mainWin.webContents.openDevTools({ mode: 'right' });
 
   // security: don’t allow new windows/popups
   mainWin.webContents.setWindowOpenHandler(() => ({ action: 'deny' }));
@@ -50,17 +56,28 @@ ipcMain.handle('select-unity-dir', async () => {
 });
 
 ipcMain.handle('save-file', async (_evt, { filePath, content }) => {
-  await fs.mkdir(path.dirname(filePath), { recursive: true }).catch(() => { });
-  await fs.writeFile(filePath, content, 'utf8');
-  return `Wrote ${content.length} bytes to ${filePath}`;
+  const abs = resolveUserPath(filePath);
+  await fs.mkdir(path.dirname(abs), { recursive: true }).catch(() => {});
+  await fs.writeFile(abs, content, 'utf8');
+  return `Wrote ${content.length} bytes to ${abs}`;
 });
 
 ipcMain.handle('read-file', async (_evt, filePath) => {
-  return fs.readFile(filePath, 'utf8');
+  const abs = resolveUserPath(filePath);
+  return fs.readFile(abs, 'utf8');
+});
+
+// optional: expose paths to renderer
+ipcMain.handle('get-paths', async () => {
+  userBase = userBase || app.getPath('userData');
+  return {
+    userData: userBase,
+    workDir: path.join(userBase, 'workDir')
+  };
 });
 
 // run il2cpp script with streaming logs
-ipcMain.handle('run-script', async (_evt, { args = [], env = {}, cwd = __dirname }) => {
+ipcMain.handle('run-script', async (_evt, { args = [], env = {}, cwd }) => {
   if (runningProc) {
     throw new Error('A build is already running.');
   }
@@ -69,8 +86,11 @@ ipcMain.handle('run-script', async (_evt, { args = [], env = {}, cwd = __dirname
 
   return new Promise((resolve, reject) => {
     try {
+      const workDir = resolveUserPath(cwd || 'workDir');
+      fs.mkdir(workDir, { recursive: true }).catch(() => {});
+
       runningProc = spawn(script, args, {
-        cwd,
+        cwd: workDir,
         env: { ...process.env, ...env },
         shell: false,
         stdio: ['ignore', 'pipe', 'pipe']
@@ -91,7 +111,12 @@ ipcMain.handle('run-script', async (_evt, { args = [], env = {}, cwd = __dirname
       runningProc.on('error', (err) => {
         const msg = `Failed to start process:\n${err.message}`;
         if (mainWin && !mainWin.isDestroyed()) {
-          dialog.showMessageBox(mainWin, { type: 'error', title: 'Script Error', message: 'Script failed to start', detail: msg });
+          dialog.showMessageBox(mainWin, {
+            type: 'error',
+            title: 'Script Error',
+            message: 'Script failed to start',
+            detail: msg
+          });
         }
         runningProc = null;
         reject(err);
@@ -145,9 +170,8 @@ app.on('activate', () => {
 });
 
 app.on('window-all-closed', () => {
-  // on mac you’d usually stay alive; you’re quitting anyway, so:
   if (runningProc) {
-    try { runningProc.kill('SIGTERM'); } catch { } // best effort
+    try { runningProc.kill('SIGTERM'); } catch {}
   }
   app.quit();
 });

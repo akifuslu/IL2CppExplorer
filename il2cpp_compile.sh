@@ -1,8 +1,11 @@
 #!/usr/bin/env bash
 set -e
+set -x
 
-mkdir -p workDir/out
-mkdir -p workDir/out_asm
+echo "$PWD"
+
+mkdir -p out
+mkdir -p out_asm
 
 
 U="$UNITY_DIR/Unity.app/Contents"
@@ -34,9 +37,9 @@ done
 
 "$U"/MonoBleedingEdge/bin/mcs \
   -target:library \
-  -out:workDir/UserCode.dll \
+  -out:UserCode.dll \
   "${REFS[@]}" \
-  workDir/UserCode.cs
+  UserCode.cs
 
 Managed="$U"/Managed/UnityEngine
 
@@ -48,9 +51,9 @@ Managed="$U"/Managed/UnityEngine
   --platform=Android \
   --configuration=$CONFIGURATION\
   --architecture=$ARCHITECTURE \
-  --generatedcppdir=workDir/out \
+  --generatedcppdir=out \
   "${ASS[@]}" \
-  --assembly=workDir/UserCode.dll \
+  --assembly=UserCode.dll \
 
 
 
@@ -66,9 +69,9 @@ if [ "$ARCHITECTURE" = "ARMv7" ]; then
 fi
 
 
-$CLANG ./workDir/out/UserCode.cpp \
--I ./workDir/out \
--o ./workDir/out_asm/UserCode.o \
+$CLANG ./out/UserCode.cpp \
+-I ./out \
+-o ./out_asm/UserCode.o \
 -I $UNITY_DIR/Unity.app/Contents/il2cpp/libil2cpp/pch \
 -I $UNITY_DIR/Unity.app/Contents/il2cpp/libil2cpp \
 -I $UNITY_DIR/Unity.app/Contents/il2cpp/external/baselib/Include \
@@ -120,5 +123,5 @@ $CLANG ./workDir/out/UserCode.cpp \
 -g \
 -c 
 
-objdump -d --source workDir/out_asm/UserCode.o > workDir/out_asm/UserCode.s
+objdump -d --source out_asm/UserCode.o > out_asm/UserCode.s
 

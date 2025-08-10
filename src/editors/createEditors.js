@@ -1,6 +1,10 @@
 define(['vs/editor/editor.main'], function () {
     function createEditors() {
-      const leftEditor = monaco.editor.create(document.getElementById('left'), {
+      const leftEl   = document.getElementById('left');
+      const midEl    = document.getElementById('middle');
+      const rightEl  = document.getElementById('right');
+  
+      const leftEditor = monaco.editor.create(leftEl, {
         value:
   `// Type C# here…
   using UnityEngine;
@@ -15,7 +19,7 @@ define(['vs/editor/editor.main'], function () {
         theme: 'vs-dark'
       });
   
-      const middleEditor = monaco.editor.create(document.getElementById('middle'), {
+      const middleEditor = monaco.editor.create(midEl, {
         value: '// Generated C++ will appear here',
         language: 'cpp',
         theme: 'vs-dark',
@@ -23,7 +27,7 @@ define(['vs/editor/editor.main'], function () {
         minimap: { enabled: false }
       });
   
-      const rightEditor = monaco.editor.create(document.getElementById('right'), {
+      const rightEditor = monaco.editor.create(rightEl, {
         value: '; Generated ASM will appear here',
         language: 'armasm',
         theme: 'vs-dark',
@@ -37,19 +41,32 @@ define(['vs/editor/editor.main'], function () {
         rightEditor.layout();
       }
   
-      window.addEventListener('resize', relayout);
-      relayout();
+      // Initialize Split after the first paint so CSS sizes are applied
+      requestAnimationFrame(() => {
+        const split = Split(['#left-pane', '#mid-pane', '#right-pane'], {
+          sizes: [33, 34, 33],
+          minSize: 100,
+          gutterSize: 8,
+          cursor: 'col-resize',
+          onDrag: relayout
+        });
   
-      // Split.js is assumed global
-      Split(['#left-pane', '#mid-pane', '#right-pane'], {
-        sizes: [33, 33, 33],
-        minSize: 100,
-        gutterSize: 8,
-        cursor: 'col-resize',
-        onDrag: relayout
+        // Ensure widths are written, then layout monaco
+        split.setSizes([33, 34, 33]);
+        // One more tick so Split can apply inline styles
+        setTimeout(() => {
+          relayout();
+          // Nudge anything listening to resize (some themes/monaco bits do)
+          window.dispatchEvent(new Event('resize'));
+        }, 0);
       });
   
-      return { leftEditor, middleEditor, rightEditor };
+      window.addEventListener('resize', relayout);
+  
+      // Initial layout (in case elements already have size)
+      relayout();
+  
+      return { leftEditor, middleEditor, rightEditor, relayout };
     }
   
     return { createEditors };

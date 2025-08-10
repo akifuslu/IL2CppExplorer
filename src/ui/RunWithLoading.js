@@ -1,4 +1,4 @@
-define(['src/ui/LoadingOverlay'], function (LoadingOverlay) {
+define(['src/ui/loadingOverlay'], function (LoadingOverlay) {
     return async function runWithLoading(editors, work) {
       const overlays = editors.map(editor => {
         const ov = new LoadingOverlay(editor);

@@ -29,7 +29,7 @@ define(['src/ui/runWithLoading'], function (runWithLoading) {
         const config   = configSelect.value;
   
         const code = leftEditor.getValue();
-        const outPath = './workDir/UserCode.cs';
+        const outPath = 'workDir/UserCode.cs';
   
         try {
           const msg = await window.api.saveFile(outPath, code);
@@ -44,13 +44,14 @@ define(['src/ui/runWithLoading'], function (runWithLoading) {
               UNITY_DIR: unityDir,
               ARCHITECTURE: arch,
               CONFIGURATION: config
-            });
+            },
+            '');
             console.log('✅ script output:\n', output);
           });
   
           // load C++
           try {
-            const cpp = await window.api.readFile('./workDir/out/UserCode.cpp');
+            const cpp = await window.api.readFile('workDir/out/UserCode.cpp');
             middleEditor.setValue(cpp);
           } catch (e) {
             console.error('Failed to load C++:', e);
@@ -58,7 +59,7 @@ define(['src/ui/runWithLoading'], function (runWithLoading) {
   
           // load ASM
           try {
-            const asm = await window.api.readFile('./workDir/out_asm/UserCode.s');
+            const asm = await window.api.readFile('workDir/out_asm/UserCode.s');
             rightEditor.setValue(asm);
           } catch (e) {
             console.error('Failed to load ASM:', e);

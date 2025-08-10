@@ -1,17 +1,42 @@
 {
-  "name": "il2cppexplorerdesktop",
+  "name": "IL2CPP-Explorer",
   "version": "1.0.0",
   "description": "",
   "main": "main.js",
-  "scripts": {
-    "start": "electron ."
-  },
-  "keywords": [],
+  "type": "commonjs",
   "author": "",
   "license": "ISC",
-  "type": "commonjs",
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder",
+    "dist:mac": "electron-builder --mac",
+    "dist:win": "electron-builder --win",
+    "dist:linux": "electron-builder --linux"
+  },
+  "build": {
+    "appId": "com.akifotti.il2cppexplorer",
+    "productName": "IL2CPP Explorer",
+    "files": [
+      "main.js",
+      "preload.js",
+      "index.html",
+      "main.css",
+      "src/**",
+      "vs/**",                              
+      "node_modules/split.js/dist/split.min.js"      
+    ],
+    "extraResources": [
+      { "from": "il2cpp_compile.sh", "to": "il2cpp_compile.sh" }
+    ],
+    "asar": true,
+    "mac": { "target": ["dmg","zip"], "icon": "icon/icon.icns" },
+    "win": { "target": ["nsis","zip"] },
+    "linux": { "target": ["AppImage","deb"] },
+    "afterPack": "src/afterPack.js"
+  },
   "devDependencies": {
-    "electron": "^37.2.3"
+    "electron": "^37.2.3",
+    "electron-builder": "^26.0.12"
   },
   "dependencies": {
     "@shoelace-style/shoelace": "^2.20.1",
