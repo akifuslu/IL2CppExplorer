@@ -433,13 +433,16 @@
   
     "tokenizer": {
       "root": [
-      ["[;#].*$",               "comment" ],
+      ["\\b(?:0x)?[0-9a-fA-F]+:(?=\\s|$)", "type"],
+      ["[;].*$",               "comment" ],
+      ["[<>].*$",               "annotation" ],
       ["^\\s*[A-Za-z_]\\w*:",   "label" ],
       ["\\.[A-Za-z]+\\b",       "keyword" ],
       ["[A-Za-z_]\\w*",         {"cases": { "@instructions": "keyword", "@default": "" }} ],
       [",",                     "delimiter" ],
-      ["0x[0-9A-Fa-f]+\\b",     "number.hex" ],
-      ["\\b\\d+\\b",            "number" ],
+      ["\\d*\\.\\d+(?:[eE][\\-+]?\\d+)?", "number.float"],
+      ["0[xX][0-9a-fA-F]+",               "number.hex"],
+      ["\\b\\d+\\b",                      "number"],
       ["[()[\\]:]",             "delimiter"],
       ["[+\\-*/]",              "operator" ]
     ]

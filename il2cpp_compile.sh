@@ -1,11 +1,9 @@
 #!/usr/bin/env bash
 set -e
-set -x
 
 mkdir -p workDir/out
 mkdir -p workDir/out_asm
 
-UNITY_DIR="/Applications/Unity/Hub/Editor/6000.0.39f1"
 
 U="$UNITY_DIR/Unity.app/Contents"
 
@@ -28,6 +26,9 @@ done
 for D in "$U"/MonoBleedingEdge/lib/mono/unityaot-linux/Facades/*.dll; do
   ASS+=("--assembly=$D")
 done
+for D in "$U"/Managed/*.dll; do
+  ASS+=("--assembly=$D")
+done
 
 
 
@@ -45,81 +46,25 @@ Managed="$U"/Managed/UnityEngine
   --enable-array-bounds-check \
   --dotnetprofile=unityaot-linux \
   --platform=Android \
-  --architecture=ARM64 \
+  --configuration=$CONFIGURATION\
+  --architecture=$ARCHITECTURE \
   --generatedcppdir=workDir/out \
   "${ASS[@]}" \
-	--assembly="$Managed"/UnityEngine.dll \
-	--assembly="$Managed"/UnityEngine.CoreModule.dll \
-	--assembly="$Managed"/UnityEngine.DSPGraphModule.dll \
-	--assembly="$Managed"/UnityEngine.AudioModule.dll \
-	--assembly="$Managed"/UnityEngine.UnityCurlModule.dll \
-	--assembly="$Managed"/UnityEngine.HierarchyCoreModule.dll \
-	--assembly="$Managed"/UnityEngine.ContentLoadModule.dll \
-	--assembly="$Managed"/UnityEngine.PropertiesModule.dll \
-	--assembly="$Managed"/UnityEngine.TLSModule.dll \
-	--assembly="$Managed"/UnityEngine.UnityAnalyticsCommonModule.dll \
-	--assembly="$Managed"/UnityEngine.AndroidJNIModule.dll \
-	--assembly="$Managed"/UnityEngine.MarshallingModule.dll \
-	--assembly="$Managed"/UnityEngine.InputLegacyModule.dll \
-	--assembly="$Managed"/UnityEngine.AccessibilityModule.dll \
-	--assembly="$Managed"/UnityEngine.UIModule.dll \
-	--assembly="$Managed"/UnityEngine.UnityConnectModule.dll \
-	--assembly="$Managed"/UnityEngine.AIModule.dll \
-	--assembly="$Managed"/UnityEngine.AMDModule.dll \
-	--assembly="$Managed"/UnityEngine.UnityAnalyticsModule.dll \
-	--assembly="$Managed"/UnityEngine.PerformanceReportingModule.dll \
-	--assembly="$Managed"/UnityEngine.Physics2DModule.dll \
-	--assembly="$Managed"/UnityEngine.AnimationModule.dll \
-	--assembly="$Managed"/UnityEngine.PhysicsModule.dll \
-	--assembly="$Managed"/UnityEngine.AssetBundleModule.dll \
-	--assembly="$Managed"/UnityEngine.SharedInternalsModule.dll \
-	--assembly="$Managed"/UnityEngine.TextRenderingModule.dll \
-	--assembly="$Managed"/UnityEngine.ClothModule.dll \
-	--assembly="$Managed"/UnityEngine.ClusterInputModule.dll \
-	--assembly="$Managed"/UnityEngine.ClusterRendererModule.dll \
-	--assembly="$Managed"/UnityEngine.CrashReportingModule.dll \
-	--assembly="$Managed"/UnityEngine.TilemapModule.dll \
-	--assembly="$Managed"/UnityEngine.TerrainModule.dll \
-	--assembly="$Managed"/UnityEngine.IMGUIModule.dll \
-	--assembly="$Managed"/UnityEngine.VFXModule.dll \
-	--assembly="$Managed"/UnityEngine.VideoModule.dll \
-	--assembly="$Managed"/UnityEngine.VRModule.dll \
-	--assembly="$Managed"/UnityEngine.GridModule.dll \
-	--assembly="$Managed"/UnityEngine.ImageConversionModule.dll \
-	--assembly="$Managed"/UnityEngine.InputForUIModule.dll \
-	--assembly="$Managed"/UnityEngine.SubsystemsModule.dll \
-	--assembly="$Managed"/UnityEngine.JSONSerializeModule.dll \
-	--assembly="$Managed"/UnityEngine.LocalizationModule.dll \
-	--assembly="$Managed"/UnityEngine.MultiplayerModule.dll \
-	--assembly="$Managed"/UnityEngine.UnityWebRequestModule.dll \
-	--assembly="$Managed"/UnityEngine.UnityWebRequestTextureModule.dll \
-	--assembly="$Managed"/UnityEngine.UnityWebRequestAssetBundleModule.dll \
-	--assembly="$Managed"/UnityEngine.UnityWebRequestAudioModule.dll \
-	--assembly="$Managed"/UnityEngine.UnityWebRequestWWWModule.dll \
-	--assembly="$Managed"/UnityEngine.NVIDIAModule.dll \
-	--assembly="$Managed"/UnityEngine.ParticleSystemModule.dll \
-	--assembly="$Managed"/UnityEngine.DirectorModule.dll \
-	--assembly="$Managed"/UnityEngine.VirtualTexturingModule.dll \
-	--assembly="$Managed"/UnityEngine.ScreenCaptureModule.dll \
-	--assembly="$Managed"/UnityEngine.GameCenterModule.dll \
-	--assembly="$Managed"/UnityEngine.SpriteMaskModule.dll \
-	--assembly="$Managed"/UnityEngine.StreamingModule.dll \
-	--assembly="$Managed"/UnityEngine.TerrainPhysicsModule.dll \
-	--assembly="$Managed"/UnityEngine.TextCoreFontEngineModule.dll \
-	--assembly="$Managed"/UnityEngine.TextCoreTextEngineModule.dll \
-	--assembly="$Managed"/UnityEngine.SpriteShapeModule.dll \
-	--assembly="$Managed"/UnityEngine.UIElementsModule.dll \
-	--assembly="$Managed"/UnityEngine.VehiclesModule.dll \
-	--assembly="$Managed"/UnityEngine.WindModule.dll \
-	--assembly="$Managed"/UnityEngine.XRModule.dll \
-	--assembly="$Managed"/UnityEngine.ARModule.dll \
-	--assembly="$Managed"/UnityEngine.InputModule.dll \
   --assembly=workDir/UserCode.dll \
 
-echo "Done! C++ lives in ./cpp-out"
+
+
+Optimization=Os
+if [ "$CONFIGURATION" = "Debug" ]; then
+	Optimization=O0
+fi
 
 NDK="$UNITY_DIR/PlaybackEngines/AndroidPlayer/NDK"
 CLANG="$NDK/toolchains/llvm/prebuilt/darwin-x86_64/bin/aarch64-linux-android23-clang++"
+if [ "$ARCHITECTURE" = "ARMv7" ]; then
+	CLANG="$NDK/toolchains/llvm/prebuilt/darwin-x86_64/bin/armv7a-linux-androideabi23-clang++"
+fi
+
 
 $CLANG ./workDir/out/UserCode.cpp \
 -I ./workDir/out \
@@ -128,7 +73,6 @@ $CLANG ./workDir/out/UserCode.cpp \
 -I $UNITY_DIR/Unity.app/Contents/il2cpp/libil2cpp \
 -I $UNITY_DIR/Unity.app/Contents/il2cpp/external/baselib/Include \
 -I $UNITY_DIR/Unity.app/Contents/il2cpp/external/baselib/Platforms/Android/Include \
--march=armv8-a  \
 -D__ANDROID_UNAVAILABLE_SYMBOLS_ARE_WEAK__  \
 -faddrsig  \
 -DANDROID  \
@@ -153,7 +97,7 @@ $CLANG ./workDir/out/UserCode.cpp \
 -fvisibility=hidden \
 -fexceptions \
 -funwind-tables \
--Os \
+-$Optimization \
 -fPIC \
 -fno-strict-overflow \
 -ffunction-sections \
@@ -169,7 +113,6 @@ $CLANG ./workDir/out/UserCode.cpp \
 -DIL2CPP_INCREMENTAL_TIME_SLICE=3 \
 -DHAVE_BDWGC_GC \
 -fcolor-diagnostics \
--target aarch64-linux-android23 \
 -mllvm \
 --dse-memoryssa-defs-per-block-limit=0 \
 -fstrict-aliasing \
@@ -178,6 +121,4 @@ $CLANG ./workDir/out/UserCode.cpp \
 -c 
 
 objdump -d --source workDir/out_asm/UserCode.o > workDir/out_asm/UserCode.s
-
-echo "Done! Compiled cpp"
 
